@@ -1,0 +1,39 @@
+fastlane_version '2.53.1'
+
+before_all do
+  ensure_git_branch
+  ensure_git_status_clean
+  git_pull
+end
+
+platform :ios do
+  #ioS lanes
+
+  desc 'Build the iOS application.'
+    private_lane :build do
+      certificates
+      increment_build_number(xcodeproj: './ios/FastlaneDemo.xcodeproj')
+      gym(scheme: 'name', project: './ios/FastlaneDemo.xcodeproj')
+    end
+
+  desc 'Ship to Testflight.'
+  lane :beta do
+    build
+    pilot
+    commit_version_bump(message: 'Bump build', xcodeproj: './ios/name.xcodeproj')
+    push_to_git_remote
+  end  
+
+end
+
+platform :android do
+  #Android lanes
+
+  desc 'Build the Android application.'
+  private_lane :build do
+    gradle(task: 'clean', project_dir: 'android/')
+    gradle(task: 'assemble', build_type: 'Release', project_dir: 'android/')
+  end
+
+end
+
